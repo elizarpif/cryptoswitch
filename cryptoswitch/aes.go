@@ -36,7 +36,6 @@ func encryptAES(ss []byte, ct bytes.Buffer, msg []byte) ([]byte, error) {
 	return ct.Bytes(), nil
 }
 
-
 func decryptAES(ss []byte, msg []byte) ([]byte, error) {
 	// AES decryption part
 	nonce := msg[:16]

@@ -26,4 +26,3 @@ func zeroPad(b []byte, leigth int) []byte {
 
 	return b
 }
-

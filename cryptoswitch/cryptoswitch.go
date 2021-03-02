@@ -4,15 +4,32 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 
 	"github.com/fomichev/secp256k1"
 )
 
-func Algs() {
-	//elliptic.CurveParams{}
-	//elliptic.Curve()
+type Cipher int
+
+const (
+	Aes Cipher = iota
+	Des
+	ThreeDes
+	Rc5
+	Blowfish
+	Twofish
+	Rc4
+	Seal
+)
+
+type CryptoSwitch struct {
+	alg Cipher
+}
+
+func NewCryptoSwitch(cipher Cipher) *CryptoSwitch {
+	return &CryptoSwitch{alg: cipher}
 }
 
 // GenerateKey generates secp256k1 key pair
@@ -35,7 +52,7 @@ func GenerateKey() (*PrivateKey, error) {
 }
 
 // Encrypt encrypts a passed message with a receiver public key, returns ciphertext or encryption error
-func Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 	var cipherTextBuf bytes.Buffer
 
 	// Generate ephemeral key
@@ -52,12 +69,19 @@ func Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// AES encryption
-	return encryptAES(sharedSecret, cipherTextBuf, msg)
+	switch cw.alg {
+	case Aes:
+		// AES encryption
+		return encryptAES(sharedSecret, cipherTextBuf, msg)
+	case Des:
+		return encryptDES(sharedSecret, cipherTextBuf, msg)
+	default:
+		return nil, errors.New("unknown cipher type")
+	}
 }
 
 // Decrypt decrypts a passed message with a receiver private key, returns plaintext or decryption error
-func Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error) {
 	// Message cannot be less than length of public key (65) + nonce (16) + tag (16)
 	if len(msg) <= (1 + 32 + 32 + 16 + 16) {
 		return nil, fmt.Errorf("invalid length of message")
@@ -79,5 +103,13 @@ func Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return decryptAES(ss, msg)
+	switch cw.alg {
+	case Aes:
+		// AES encryption
+		return decryptAES(ss, msg)
+	case Des:
+		return decryptDES(ss, msg)
+	default:
+		return nil, errors.New("unknown cipher type")
+	}
 }

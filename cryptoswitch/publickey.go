@@ -43,7 +43,6 @@ func (k *PublicKey) Bytes() []byte {
 	return bytes.Join([][]byte{{0x04}, x, y}, nil)
 }
 
-
 // Decapsulate decapsulates key by using Key Encapsulation Mechanism and returns symmetric key;
 // can be safely used as encryption key
 func (k *PublicKey) Decapsulate(priv *PrivateKey) ([]byte, error) {

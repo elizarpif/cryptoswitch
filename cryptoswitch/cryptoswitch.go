@@ -14,14 +14,14 @@ import (
 type Cipher int
 
 const (
-	Aes Cipher = iota
-	Des
-	ThreeDes
-	Rc5
+	AES Cipher = iota
+	DES
+	TripleDES
+	RC5
 	Blowfish
 	Twofish
-	Rc4
-	Seal
+	RC4
+	SEAL
 )
 
 type CryptoSwitch struct {
@@ -70,10 +70,10 @@ func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 	}
 
 	switch cw.alg {
-	case Aes:
+	case AES:
 		// AES encryption
 		return encryptAES(sharedSecret, cipherTextBuf, msg)
-	case Des:
+	case DES:
 		return encryptDES(sharedSecret, cipherTextBuf, msg)
 	default:
 		return nil, errors.New("unknown cipher type")
@@ -104,10 +104,10 @@ func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error)
 	}
 
 	switch cw.alg {
-	case Aes:
+	case AES:
 		// AES encryption
 		return decryptAES(ss, msg)
-	case Des:
+	case DES:
 		return decryptDES(ss, msg)
 	default:
 		return nil, errors.New("unknown cipher type")

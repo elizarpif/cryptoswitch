@@ -2,14 +2,15 @@ package cryptoswitch
 
 import (
 	"bytes"
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
+
+	"golang.org/x/crypto/twofish"
 )
 
-func encryptAES(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
-	block, err := aes.NewCipher(sharedSecret)
+func encryptTwofish(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
+	block, err := twofish.NewCipher(sharedSecret)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create new aes block: %w", err)
 	}
@@ -38,15 +39,14 @@ func encryptAES(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]
 	return cipherTextBuf.Bytes(), nil
 }
 
-func decryptAES(ss []byte, msg []byte) ([]byte, error) {
-	// AES decryption part
+func decryptTwofish(ss []byte, msg []byte) ([]byte, error) {
 	nonce := msg[:16]
 	tag := msg[16:32]
 
 	// Create Golang-accepted ciphertext
 	ciphertext := bytes.Join([][]byte{msg[32:], tag}, nil)
 
-	block, err := aes.NewCipher(ss)
+	block, err := twofish.NewCipher(ss)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create new aes block: %w", err)
 	}

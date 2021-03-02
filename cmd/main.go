@@ -25,7 +25,7 @@ func testEncrypt(log logger.Logger) error {
 		return err
 	}
 
-	cw := cryptoswitch.NewCryptoSwitch(cryptoswitch.Aes)
+	cw := cryptoswitch.NewCryptoSwitch(cryptoswitch.AES)
 
 	encrypt, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
 	if err != nil {

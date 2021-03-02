@@ -2,16 +2,17 @@ package cryptoswitch
 
 import (
 	"bytes"
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
+
+	"github.com/elizarpif/camellia"
 )
 
-func encryptAES(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
-	block, err := aes.NewCipher(sharedSecret)
+func encryptCamellia(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
+	block, err := camellia.NewCipher(sharedSecret)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create new aes block: %w", err)
+		return nil, fmt.Errorf("cannot create new camellia block: %w", err)
 	}
 
 	nonce := make([]byte, 16) // вектор инициализации? = длине блока, AES-128
@@ -25,7 +26,7 @@ func encryptAES(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]
 	//  режим счетчика Галуа
 	aesgcm, err := cipher.NewGCMWithNonceSize(block, 16)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create aes gcm: %w", err)
+		return nil, fmt.Errorf("cannot create camellia gcm: %w", err)
 	}
 
 	ciphertext := aesgcm.Seal(nil, nonce, msg, nil)
@@ -38,17 +39,17 @@ func encryptAES(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]
 	return cipherTextBuf.Bytes(), nil
 }
 
-func decryptAES(ss []byte, msg []byte) ([]byte, error) {
-	// AES decryption part
+func decryptCamellia(ss []byte, msg []byte) ([]byte, error) {
+	// Camellia decryption part
 	nonce := msg[:16]
 	tag := msg[16:32]
 
 	// Create Golang-accepted ciphertext
 	ciphertext := bytes.Join([][]byte{msg[32:], tag}, nil)
 
-	block, err := aes.NewCipher(ss)
+	block, err := camellia.NewCipher(ss)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create new aes block: %w", err)
+		return nil, fmt.Errorf("cannot create new camellia block: %w", err)
 	}
 
 	gcm, err := cipher.NewGCMWithNonceSize(block, 16)

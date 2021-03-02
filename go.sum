@@ -4,6 +4,10 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/ecies/go v1.0.1 h1:LYDUdQBzWPgCOuwoGl3qPECiKXwqE0+tA9JM1kvIpfw=
 github.com/ecies/go v1.0.1/go.mod h1:PmJ1sVvvBvd/aZfw4JPBW9QL/Wy+0al8xtPYqd+T6sw=
+github.com/elizarpif/camellia v0.0.3 h1:qmGWIEye8wXO/qc1rJBUSIOxqJcg/ZF44ATYNzCt0ZU=
+github.com/elizarpif/camellia v0.0.3/go.mod h1:vxFV+CPfhj42iVa+MI1ff5xWw86LMIEMsXIMohWxAgA=
+github.com/elizarpif/camellia v0.0.5 h1:CZkoZIt6EmaKte5NyEiEpnxqoko4E5e4ADp5/+7Wv0k=
+github.com/elizarpif/camellia v0.0.5/go.mod h1:vxFV+CPfhj42iVa+MI1ff5xWw86LMIEMsXIMohWxAgA=
 github.com/elizarpif/logger v0.0.5 h1:NUAHXBeB0i25fS8OYjS2P2OMurPD28F2wtygi8h5HBg=
 github.com/elizarpif/logger v0.0.5/go.mod h1:QjsUh7v0Ehv5j1oYgtakLDkgF81x/Vr/ZucxJXjOj0Y=
 github.com/fomichev/secp256k1 v0.0.0-20180413221153-00116ff8c62f h1:YbIfHI+s+tauzUAdNw+lF8a9o056PoIPaLGodgh5D7g=

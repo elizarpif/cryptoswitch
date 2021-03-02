@@ -20,6 +20,7 @@ const (
 	RC5
 	Blowfish
 	Twofish
+	Camellia
 	RC4
 	SEAL
 )
@@ -75,6 +76,10 @@ func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 		return encryptAES(sharedSecret, cipherTextBuf, msg)
 	case DES:
 		return encryptDES(sharedSecret, cipherTextBuf, msg)
+	case Twofish:
+		return encryptTwofish(sharedSecret, cipherTextBuf, msg)
+	case Camellia:
+		return encryptCamellia(sharedSecret, cipherTextBuf, msg)
 	default:
 		return nil, errors.New("unknown cipher type")
 	}
@@ -109,6 +114,10 @@ func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error)
 		return decryptAES(ss, msg)
 	case DES:
 		return decryptDES(ss, msg)
+	case Twofish:
+		return decryptTwofish(ss, msg)
+	case Camellia:
+		return decryptCamellia(ss, msg)
 	default:
 		return nil, errors.New("unknown cipher type")
 	}

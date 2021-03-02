@@ -19,11 +19,11 @@
         return err
     }
 
-	cw := cryptoswitch.NewCryptoSwitch(cryptoswitch.Aes)
-
-	encrypt, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
-	if err != nil {
-		log.WithError(err).Error("can't encrypt aes")
-		return err
-	}
+    cw := cryptoswitch.NewCryptoSwitch(cryptoswitch.Aes)
+    
+    encrypt, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
+    if err != nil {
+    log.WithError(err).Error("can't encrypt aes")
+    return err
+    }
 ```

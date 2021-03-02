@@ -13,17 +13,17 @@
 - SEAl
 
 ```go
-    privKey, err := cryptoswitch.GenerateKey()
-    if err != nil {
-        log.WithError(err).Error("can't generate private key")
-        return err
-    }
-
-    cw := cryptoswitch.NewCryptoSwitch(cryptoswitch.Aes)
-    
-    encrypt, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
-    if err != nil {
-    log.WithError(err).Error("can't encrypt aes")
+privKey, err := cryptoswitch.GenerateKey()
+if err != nil {
+    log.WithError(err).Error("can't generate private key")
     return err
-    }
+}
+
+cw := cryptoswitch.NewCryptoSwitch(cryptoswitch.AES)
+
+encrypt, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
+if err != nil {
+log.WithError(err).Error("can't encrypt aes")
+return err
+}
 ```

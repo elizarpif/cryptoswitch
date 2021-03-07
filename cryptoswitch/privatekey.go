@@ -13,9 +13,9 @@ type PrivateKey struct {
 
 // Encapsulate encapsulates key by using Key Encapsulation Mechanism and returns symmetric key;
 // can be safely used as encryption key
-func (k *PrivateKey) Encapsulate(pub *PublicKey) ([]byte,[]byte, error) {
+func (k *PrivateKey) Encapsulate(pub *PublicKey) ([]byte, []byte, error) {
 	if pub == nil {
-		return nil,nil, fmt.Errorf("public key is empty")
+		return nil, nil, fmt.Errorf("public key is empty")
 	}
 
 	var secret bytes.Buffer

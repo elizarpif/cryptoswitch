@@ -3,13 +3,13 @@
 Пакет cryptoswitch реализует схему ECIES с выбором алгоритма шифрования (на вход подаются симметричные алгоритмы шифрования, такие как AES, DES, 3DES и т.д. )
 
 Возможные алгоритмы:
-- AES
+- **AES**
 - DES
 - 3DES (TripleDES)
 - RC5
 - Blowfish
-- Twofish
-- Camellia
+- **Twofish**
+- **Camellia**
 - RC4
 - SEAl
 

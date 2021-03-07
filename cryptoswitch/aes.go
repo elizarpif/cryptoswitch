@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-func (cw *CryptoSwitch) encryptAES(sharedSecret, keyMac  []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) encryptAES(sharedSecret, keyMac []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
 	block, err := aes.NewCipher(sharedSecret)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create new AES block: %w", err)
@@ -18,7 +18,7 @@ func (cw *CryptoSwitch) encryptAES(sharedSecret, keyMac  []byte, cipherTextBuf b
 	case GCM:
 		return modes.EncryptGCM(block, cipherTextBuf, msg)
 	case CBC:
-		return modes.EncryptCBC(block,keyMac, cipherTextBuf, msg)
+		return modes.EncryptCBC(block, keyMac, cipherTextBuf, msg)
 	}
 
 	return nil, errors.New("unknown mode")

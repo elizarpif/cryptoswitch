@@ -1,6 +1,7 @@
 package cryptoswitch
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -13,7 +14,8 @@ func TestCryptoSwitch_Encrypt(t *testing.T) {
 	}
 
 	type fields struct {
-		alg Cipher
+		alg  Cipher
+		mode Mode
 	}
 	type args struct {
 		pubkey *PublicKey
@@ -29,7 +31,8 @@ func TestCryptoSwitch_Encrypt(t *testing.T) {
 		{
 			name: "AES",
 			fields: fields{
-				alg: AES,
+				alg:  AES,
+				mode: CBC,
 			},
 			args: args{
 				pubkey: privKey.PublicKey,
@@ -40,7 +43,8 @@ func TestCryptoSwitch_Encrypt(t *testing.T) {
 		{
 			name: "Twofish",
 			fields: fields{
-				alg: Twofish,
+				alg:  Twofish,
+				mode: CBC,
 			},
 			args: args{
 				pubkey: privKey.PublicKey,
@@ -51,7 +55,8 @@ func TestCryptoSwitch_Encrypt(t *testing.T) {
 		{
 			name: "Camellia",
 			fields: fields{
-				alg: Twofish,
+				alg:  Twofish,
+				mode: CBC,
 			},
 			args: args{
 				pubkey: privKey.PublicKey,
@@ -103,7 +108,7 @@ func TestCryptoSwitch_Encrypt_Mode(t *testing.T) {
 		{
 			name: "AES GCM",
 			fields: fields{
-				alg: AES,
+				alg:  AES,
 				mode: GCM,
 			},
 			args: args{
@@ -113,9 +118,9 @@ func TestCryptoSwitch_Encrypt_Mode(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "CBC GCM",
+			name: "AES CBC",
 			fields: fields{
-				alg: AES,
+				alg:  AES,
 				mode: CBC,
 			},
 			args: args{
@@ -137,10 +142,56 @@ func TestCryptoSwitch_Encrypt_Mode(t *testing.T) {
 				return
 			}
 
+			fmt.Println(string(got))
+
 			decrypt, err := cw.Decrypt(privKey, got)
 			if err != nil || (string(decrypt) != testingMessage) {
 				t.Errorf("Decrypt() got = %v, want %v", string(decrypt), testingMessage)
 			}
 		})
 	}
+}
+
+func BenchmarkCryptoSwitch_Encrypt_GCM(b *testing.B) {
+	privKey, err := GenerateKey()
+	if err != nil {
+		b.Fatalf("can't generate private key: %v", err)
+	}
+
+	cw := &CryptoSwitch{
+		alg:  AES,
+		mode: GCM,
+	}
+
+	b.ResetTimer()
+	b.Run("gcm", func(b *testing.B) {
+		for i := 0; i < 1000; i++ {
+			_, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
+
+func BenchmarkCryptoSwitch_Encrypt_CBC(b *testing.B) {
+	privKey, err := GenerateKey()
+	if err != nil {
+		b.Fatalf("can't generate private key: %v", err)
+	}
+
+	cw := &CryptoSwitch{
+		alg:  AES,
+		mode: CBC,
+	}
+
+	b.ResetTimer()
+	b.Run("cbc", func(b *testing.B) {
+		for i := 0; i < 1000; i++ {
+			_, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
 }

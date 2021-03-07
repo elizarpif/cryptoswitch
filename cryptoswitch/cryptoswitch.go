@@ -99,7 +99,6 @@ func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error)
 	//if len(msg) <= (1 + 32 + 32 + 16 + 16) {
 	//	return nil, fmt.Errorf("invalid length of message")
 	//}
-	fmt.Println(len(msg))
 
 	// Ephemeral sender public key
 	ethPubkey := &PublicKey{

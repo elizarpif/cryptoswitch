@@ -79,24 +79,24 @@ func EncryptCBC(block cipher.Block, keyMac []byte, cipherTextBuf bytes.Buffer, m
 		return nil, err
 	}
 
-	mac := hmac.New(
+	tag := hmac.New(
 		crypto.SHA256.New,
 		keyMac,
 	)
 
 	cipherTextBuf.Write(ciphertext)
-	cipherTextBuf.Write(mac.Sum(nil))
+	cipherTextBuf.Write(tag.Sum(nil))
 
 	return cipherTextBuf.Bytes(), nil
 }
 
 func DecryptCBC(block cipher.Block, keyMac, msg []byte) ([]byte, error) {
-	macFrommsg := msg[len(msg)-32:]
+	tagFromMsg := msg[len(msg)-32:]
 
-	mac := hmac.New(crypto.SHA256.New,
+	tag := hmac.New(crypto.SHA256.New,
 		keyMac).Sum(nil)
 
-	if !hmac.Equal(mac, macFrommsg) {
+	if !hmac.Equal(tag, tagFromMsg) {
 		return nil, errors.New("")
 	}
 

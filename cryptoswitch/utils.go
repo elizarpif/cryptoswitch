@@ -15,10 +15,10 @@ func kdf(secret []byte) (keyEnc, keyMac []byte, err error) {
 
 	kdf := hkdf.New(sha256.New, secret, nil, nil)
 	if _, err := io.ReadFull(kdf, keyEnc); err != nil {
-		return nil,nil, fmt.Errorf("cannot read secret from HKDF reader: %w", err)
+		return nil, nil, fmt.Errorf("cannot read secret from HKDF reader: %w", err)
 	}
 	if _, err := io.ReadFull(kdf, keyMac); err != nil {
-		return nil,nil, fmt.Errorf("cannot read secret from HKDF reader: %w", err)
+		return nil, nil, fmt.Errorf("cannot read secret from HKDF reader: %w", err)
 	}
 
 	return keyEnc, keyMac, nil

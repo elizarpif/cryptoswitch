@@ -1,7 +1,6 @@
 package cryptoswitch
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -141,8 +140,6 @@ func TestCryptoSwitch_Encrypt_Mode(t *testing.T) {
 				t.Errorf("Encrypt() error = %v", err)
 				return
 			}
-
-			fmt.Println(string(got))
 
 			decrypt, err := cw.Decrypt(privKey, got)
 			if err != nil || (string(decrypt) != testingMessage) {

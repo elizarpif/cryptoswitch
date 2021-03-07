@@ -20,7 +20,7 @@ if err != nil {
     return err
 }
 
-cw := cryptoswitch.NewCryptoSwitch(cryptoswitch.AES)
+cw := cryptoswitch.NewCryptoSwitch(cryptoswitch.AES, cryptoswitch.GCM)
 
 encrypt, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
 if err != nil {

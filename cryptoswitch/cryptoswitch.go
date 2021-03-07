@@ -25,12 +25,20 @@ const (
 	SEAL
 )
 
+type Mode int
+
+const (
+	CBC Mode = iota
+	GCM
+)
+
 type CryptoSwitch struct {
-	alg Cipher
+	alg  Cipher
+	mode Mode
 }
 
-func NewCryptoSwitch(cipher Cipher) *CryptoSwitch {
-	return &CryptoSwitch{alg: cipher}
+func NewCryptoSwitch(cipher Cipher, mode Mode) *CryptoSwitch {
+	return &CryptoSwitch{alg: cipher, mode: mode}
 }
 
 // GenerateKey generates secp256k1 key pair
@@ -65,7 +73,7 @@ func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 	cipherTextBuf.Write(ephemeralKey.PublicKey.Bytes())
 
 	// Derive shared secret
-	sharedSecret, err := ephemeralKey.Encapsulate(pubkey)
+	sharedSecret, keyMac, err := ephemeralKey.Encapsulate(pubkey)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +81,7 @@ func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 	switch cw.alg {
 	case AES:
 		// AES encryption
-		return encryptAES(sharedSecret, cipherTextBuf, msg)
+		return cw.encryptAES(sharedSecret, keyMac, cipherTextBuf, msg)
 	case DES:
 		return encryptDES(sharedSecret, cipherTextBuf, msg)
 	case Twofish:
@@ -88,9 +96,10 @@ func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 // Decrypt decrypts a passed message with a receiver private key, returns plaintext or decryption error
 func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error) {
 	// Message cannot be less than length of public key (65) + nonce (16) + tag (16)
-	if len(msg) <= (1 + 32 + 32 + 16 + 16) {
-		return nil, fmt.Errorf("invalid length of message")
-	}
+	//if len(msg) <= (1 + 32 + 32 + 16 + 16) {
+	//	return nil, fmt.Errorf("invalid length of message")
+	//}
+	fmt.Println(len(msg))
 
 	// Ephemeral sender public key
 	ethPubkey := &PublicKey{
@@ -103,7 +112,7 @@ func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error)
 	msg = msg[65:]
 
 	// Derive shared secret
-	ss, err := ethPubkey.Decapsulate(privkey)
+	ss, keyMac, err := ethPubkey.Decapsulate(privkey)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +120,7 @@ func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error)
 	switch cw.alg {
 	case AES:
 		// AES encryption
-		return decryptAES(ss, msg)
+		return cw.decryptAES(ss, keyMac, msg)
 	case DES:
 		return decryptDES(ss, msg)
 	case Twofish:

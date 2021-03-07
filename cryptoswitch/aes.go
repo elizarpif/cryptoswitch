@@ -3,63 +3,67 @@ package cryptoswitch
 import (
 	"bytes"
 	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
+	"diploma-elliptic/modes"
+	"errors"
 	"fmt"
 )
 
-func encryptAES(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) encryptAES(sharedSecret, keyMac  []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
 	block, err := aes.NewCipher(sharedSecret)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create new aes block: %w", err)
+		return nil, fmt.Errorf("cannot create new AES block: %w", err)
 	}
 
-	nonce := make([]byte, 16) // вектор инициализации? = длине блока, AES-128
-	if _, err := rand.Read(nonce); err != nil {
-		return nil, fmt.Errorf("cannot read random bytes for nonce: %w", err)
+	switch cw.mode {
+	case GCM:
+		return modes.EncryptGCM(block, cipherTextBuf, msg)
+	case CBC:
+		return modes.EncryptCBC(block,keyMac, cipherTextBuf, msg)
 	}
 
-	// добавляем к буферу (эфемерный публич ключ + IV)
-	cipherTextBuf.Write(nonce)
-
-	//  режим счетчика Галуа
-	aesgcm, err := cipher.NewGCMWithNonceSize(block, 16)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create aes gcm: %w", err)
-	}
-
-	ciphertext := aesgcm.Seal(nil, nonce, msg, nil)
-
-	tag := ciphertext[len(ciphertext)-aesgcm.NonceSize():]
-	cipherTextBuf.Write(tag)
-	ciphertext = ciphertext[:len(ciphertext)-len(tag)]
-	cipherTextBuf.Write(ciphertext)
-
-	return cipherTextBuf.Bytes(), nil
+	return nil, errors.New("unknown mode")
 }
 
-func decryptAES(ss []byte, msg []byte) ([]byte, error) {
-	// AES decryption part
-	nonce := msg[:16]
-	tag := msg[16:32]
+func blockModeEncrypt(c modes.BlockMode, data []byte) ([]byte, error) {
+	// дополняем последний блок
+	src, dst := modes.Padding(data, c.BlockSize())
 
-	// Create Golang-accepted ciphertext
-	ciphertext := bytes.Join([][]byte{msg[32:], tag}, nil)
+	err := c.CryptBlocks(dst, src)
+	if err != nil {
+		return nil, err
+	}
 
+	return dst, nil
+}
+
+func blockModeDecrypt(c modes.BlockMode, data []byte) ([]byte, error) {
+	src := data
+	dst := make([]byte, len(data))
+
+	err := c.CryptBlocks(dst, src)
+	if err != nil {
+		return nil, err
+	}
+
+	// избавляемся от набивки
+	res := modes.Unpadding(dst)
+
+	return res, nil
+}
+
+func (cw *CryptoSwitch) decryptAES(ss, keyMac []byte, ciphertext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(ss)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create new aes block: %w", err)
+		return nil, fmt.Errorf("cannot create new AES block: %w", err)
 	}
 
-	gcm, err := cipher.NewGCMWithNonceSize(block, 16)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create gcm cipher: %w", err)
+	// AES decryption part
+	switch cw.mode {
+	case GCM:
+		return modes.DecryptGCM(block, ciphertext)
+	case CBC:
+		return modes.DecryptCBC(block, keyMac, ciphertext)
 	}
 
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return nil, fmt.Errorf("cannot decrypt ciphertext: %w", err)
-	}
-
-	return plaintext, nil
+	return nil, errors.New("unknown mode")
 }

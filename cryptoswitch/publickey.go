@@ -45,9 +45,9 @@ func (k *PublicKey) Bytes() []byte {
 
 // Decapsulate decapsulates key by using Key Encapsulation Mechanism and returns symmetric key;
 // can be safely used as encryption key
-func (k *PublicKey) Decapsulate(priv *PrivateKey) ([]byte, error) {
+func (k *PublicKey) Decapsulate(priv *PrivateKey) ([]byte,[]byte, error) {
 	if priv == nil {
-		return nil, fmt.Errorf("public key is empty")
+		return nil, nil, fmt.Errorf("public key is empty")
 	}
 
 	var secret bytes.Buffer

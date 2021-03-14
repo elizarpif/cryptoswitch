@@ -1,4 +1,4 @@
-module diploma-elliptic
+module github.com/elizarpif/diploma-elliptic
 
 go 1.15
 

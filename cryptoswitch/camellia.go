@@ -2,10 +2,10 @@ package cryptoswitch
 
 import (
 	"bytes"
-	"diploma-elliptic/modes"
 	"fmt"
 
 	"github.com/elizarpif/camellia"
+	"github.com/elizarpif/diploma-elliptic/modes"
 )
 
 func encryptCamellia(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {

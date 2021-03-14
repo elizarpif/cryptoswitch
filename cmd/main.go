@@ -1,9 +1,9 @@
 package main
 
 import (
-	"diploma-elliptic/cryptoswitch"
 	"errors"
 
+	"github.com/elizarpif/diploma-elliptic/cryptoswitch"
 	"github.com/elizarpif/logger"
 )
 

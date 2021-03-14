@@ -1,6 +1,7 @@
 package cryptoswitch
 
 import (
+	"io/ioutil"
 	"testing"
 )
 
@@ -149,6 +150,17 @@ func TestCryptoSwitch_Encrypt_Mode(t *testing.T) {
 	}
 }
 
+const fileName = "truelove.mov"
+
+func openfile(filename string) ([]byte, error) {
+	dat, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	return dat, nil
+}
+
 func BenchmarkCryptoSwitch_Encrypt_GCM(b *testing.B) {
 	privKey, err := GenerateKey()
 	if err != nil {
@@ -156,14 +168,19 @@ func BenchmarkCryptoSwitch_Encrypt_GCM(b *testing.B) {
 	}
 
 	cw := &CryptoSwitch{
-		alg:  AES,
+		alg:  Twofish,
 		mode: GCM,
+	}
+
+	testFile, err := openfile(fileName)
+	if err != nil {
+		b.Fatalf("can't generate private key: %v", err)
 	}
 
 	b.ResetTimer()
 	b.Run("gcm", func(b *testing.B) {
-		for i := 0; i < 1000; i++ {
-			_, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
+		for i := 0; i < 1; i++ {
+			_, err := cw.Encrypt(privKey.PublicKey, []byte(testFile))
 			if err != nil {
 				b.Fatal(err)
 			}
@@ -178,14 +195,20 @@ func BenchmarkCryptoSwitch_Encrypt_CBC(b *testing.B) {
 	}
 
 	cw := &CryptoSwitch{
-		alg:  AES,
+		alg:  Twofish,
 		mode: CBC,
+	}
+
+
+	testFile, err := openfile(fileName)
+	if err != nil {
+		b.Fatalf("can't generate private key: %v", err)
 	}
 
 	b.ResetTimer()
 	b.Run("cbc", func(b *testing.B) {
-		for i := 0; i < 1000; i++ {
-			_, err := cw.Encrypt(privKey.PublicKey, []byte(testingMessage))
+		for i := 0; i < 1; i++ {
+			_, err := cw.Encrypt(privKey.PublicKey, testFile)
 			if err != nil {
 				b.Fatal(err)
 			}

@@ -3,9 +3,10 @@ package cryptoswitch
 import (
 	"bytes"
 	"crypto/aes"
-	"diploma-elliptic/modes"
 	"errors"
 	"fmt"
+
+	"github.com/elizarpif/diploma-elliptic/modes"
 )
 
 func (cw *CryptoSwitch) encryptAES(sharedSecret, keyMac []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
@@ -22,33 +23,6 @@ func (cw *CryptoSwitch) encryptAES(sharedSecret, keyMac []byte, cipherTextBuf by
 	}
 
 	return nil, errors.New("unknown mode")
-}
-
-func blockModeEncrypt(c modes.BlockMode, data []byte) ([]byte, error) {
-	// дополняем последний блок
-	src, dst := modes.Padding(data, c.BlockSize())
-
-	err := c.CryptBlocks(dst, src)
-	if err != nil {
-		return nil, err
-	}
-
-	return dst, nil
-}
-
-func blockModeDecrypt(c modes.BlockMode, data []byte) ([]byte, error) {
-	src := data
-	dst := make([]byte, len(data))
-
-	err := c.CryptBlocks(dst, src)
-	if err != nil {
-		return nil, err
-	}
-
-	// избавляемся от набивки
-	res := modes.Unpadding(dst)
-
-	return res, nil
 }
 
 func (cw *CryptoSwitch) decryptAES(ss, keyMac []byte, ciphertext []byte) ([]byte, error) {

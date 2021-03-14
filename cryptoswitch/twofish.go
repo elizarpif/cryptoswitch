@@ -2,9 +2,9 @@ package cryptoswitch
 
 import (
 	"bytes"
-	"diploma-elliptic/modes"
 	"fmt"
 
+	"github.com/elizarpif/diploma-elliptic/modes"
 	"golang.org/x/crypto/twofish"
 )
 

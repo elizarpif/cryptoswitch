@@ -96,9 +96,9 @@ func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 // Decrypt decrypts a passed message with a receiver private key, returns plaintext or decryption error
 func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error) {
 	// Message cannot be less than length of public key (65) + nonce (16) + tag (16)
-	//if len(msg) <= (1 + 32 + 32 + 16 + 16) {
-	//	return nil, fmt.Errorf("invalid length of message")
-	//}
+	if cw.mode == GCM && len(msg) <= (1+32+32+16+16) {
+		return nil, fmt.Errorf("invalid length of message")
+	}
 
 	// Ephemeral sender public key
 	ethPubkey := &PublicKey{

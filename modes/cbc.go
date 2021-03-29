@@ -3,9 +3,7 @@ package modes
 import (
 	"bytes"
 	"crypto/cipher"
-	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
 	"errors"
 	"io"
 )
@@ -79,34 +77,20 @@ func EncryptCBC(block cipher.Block, keyMac []byte, cipherTextBuf bytes.Buffer, m
 		return nil, err
 	}
 
-	tag := hmac.New(
-		sha256.New,
-		keyMac,
-	)
-
-	// вычисляем тег
-	tag.Write(ciphertext)
+	tag := tag(keyMac, ciphertext)
 
 	cipherTextBuf.Write(ciphertext)
-	cipherTextBuf.Write(tag.Sum(nil))
+	cipherTextBuf.Write(tag)
 
 	return cipherTextBuf.Bytes(), nil
 }
 
 func DecryptCBC(block cipher.Block, keyMac, msg []byte) ([]byte, error) {
 	tagFromMsg := msg[len(msg)-32:]
-
-	tag := hmac.New(
-		sha256.New,
-		keyMac,
-	)
-
-	// вычисляем тег
 	ciphertext := msg[:len(msg)-32]
-	tag.Write(ciphertext)
 
-	if !hmac.Equal(tag.Sum(nil), tagFromMsg) {
-		return nil, errors.New("")
+	if !validTag(tagFromMsg, keyMac, ciphertext) {
+		return nil, errors.New("invalid tag")
 	}
 
 	return decryptCBC(block, ciphertext)

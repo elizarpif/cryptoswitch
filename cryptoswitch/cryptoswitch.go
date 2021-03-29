@@ -85,9 +85,9 @@ func (cw *CryptoSwitch) Encrypt(bobPubKey *PublicKey, msg []byte) ([]byte, error
 	case DES:
 		return encryptDES(keyEnc, cipherTextBuf, msg)
 	case Twofish:
-		return encryptTwofish(keyEnc, cipherTextBuf, msg)
+		return encryptTwofish(keyEnc, keyMac, cipherTextBuf, msg)
 	case Camellia:
-		return encryptCamellia(keyEnc, cipherTextBuf, msg)
+		return encryptCamellia(keyEnc, keyMac, cipherTextBuf, msg)
 	default:
 		return nil, errors.New("unknown cipher type")
 	}
@@ -123,9 +123,9 @@ func (cw *CryptoSwitch) Decrypt(bobPrivKey *PrivateKey, msg []byte) ([]byte, err
 	case DES:
 		return decryptDES(keyEnc, msg)
 	case Twofish:
-		return decryptTwofish(keyEnc, msg)
+		return decryptTwofish(keyEnc, keyMac, msg)
 	case Camellia:
-		return decryptCamellia(keyEnc, msg)
+		return decryptCamellia(keyEnc, keyMac, msg)
 	default:
 		return nil, errors.New("unknown cipher type")
 	}

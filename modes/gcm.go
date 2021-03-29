@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"crypto/cipher"
 	"crypto/rand"
+	"errors"
 	"fmt"
 )
 
-func EncryptGCM(block cipher.Block, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
+func EncryptGCM(block cipher.Block, keyMac []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
 	nonce := make([]byte, 16) //  = длине блока, AES-128
 	if _, err := rand.Read(nonce); err != nil {
 		return nil, fmt.Errorf("cannot read random bytes for nonce: %w", err)
@@ -24,20 +25,21 @@ func EncryptGCM(block cipher.Block, cipherTextBuf bytes.Buffer, msg []byte) ([]b
 
 	ciphertext := aesgcm.Seal(nil, nonce, msg, nil)
 
-	tag := ciphertext[len(ciphertext)-aesgcm.NonceSize():]
-	cipherTextBuf.Write(tag)
-	ciphertext = ciphertext[:len(ciphertext)-len(tag)]
 	cipherTextBuf.Write(ciphertext)
+	cipherTextBuf.Write(tag(keyMac, ciphertext))
 
 	return cipherTextBuf.Bytes(), nil
 }
 
-func DecryptGCM(block cipher.Block, msg []byte) ([]byte, error) {
+func DecryptGCM(block cipher.Block, keyMac, msg []byte) ([]byte, error) {
 	nonce := msg[:16]
-	tag := msg[16:32]
+	tag := msg[len(msg)-32:]
 
-	// Create Golang-accepted ciphertext
-	ciphertext := bytes.Join([][]byte{msg[32:], tag}, nil)
+	ciphertext := msg[16:len(msg)-32]
+
+	if !validTag(tag, keyMac, ciphertext) {
+		return nil, errors.New("invalid tag")
+	}
 
 	gcm, err := cipher.NewGCMWithNonceSize(block, 16)
 	if err != nil {

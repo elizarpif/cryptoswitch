@@ -8,16 +8,16 @@
 
 ![Decryption](https://github.com/elizarpif/diploma-elliptic/blob/develop/assets/ecies_decryption.png)
 
-### Возможные алгоритмы:
+### Возможные алгоритмы (курсивом - не реализовано):
 - **AES**
-- DES
-- 3DES (TripleDES)
-- RC5
-- Blowfish
+- _DES_
+- _3DES (TripleDES)_
+- _RC5_
+- _Blowfish_
 - **Twofish**
 - **Camellia**
-- RC4
-- SEAl
+- _RC4_
+- _SEAl_
 
 ```go
 privKey, err := cryptoswitch.GenerateKey()

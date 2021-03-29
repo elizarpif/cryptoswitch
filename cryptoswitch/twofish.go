@@ -8,8 +8,8 @@ import (
 	"golang.org/x/crypto/twofish"
 )
 
-func encryptTwofish(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
-	block, err := twofish.NewCipher(sharedSecret)
+func encryptTwofish(keyEnc []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
+	block, err := twofish.NewCipher(keyEnc)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create new TwoFish block: %w", err)
 	}
@@ -17,8 +17,8 @@ func encryptTwofish(sharedSecret []byte, cipherTextBuf bytes.Buffer, msg []byte)
 	return modes.EncryptGCM(block, cipherTextBuf, msg)
 }
 
-func decryptTwofish(ss []byte, msg []byte) ([]byte, error) {
-	block, err := twofish.NewCipher(ss)
+func decryptTwofish(keyEnc []byte, msg []byte) ([]byte, error) {
+	block, err := twofish.NewCipher(keyEnc)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create new TwoFish block: %w", err)
 	}

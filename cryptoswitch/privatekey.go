@@ -11,23 +11,22 @@ type PrivateKey struct {
 	D *big.Int
 }
 
-// Encapsulate encapsulates key by using Key Encapsulation Mechanism and returns symmetric key;
-// can be safely used as encryption key
-func (k *PrivateKey) Encapsulate(pub *PublicKey) ([]byte, []byte, error) {
+// Encapsulate инакпсулирует ключ используя KEM (Key Encapsulation Mechanism)
+func (ephemeralKey *PrivateKey) Encapsulate(pub *PublicKey) ([]byte, []byte, error) {
 	if pub == nil {
 		return nil, nil, fmt.Errorf("public key is empty")
 	}
 
 	var secret bytes.Buffer
-	secret.Write(k.PublicKey.Bytes())
+	secret.Write(ephemeralKey.PublicKey.Bytes()) // эфемерный публичный ключ
 
-	sx, sy := pub.Curve.ScalarMult(pub.X, pub.Y, k.D.Bytes())
-	secret.Write([]byte{0x04})
+	sx, sy := pub.Curve.ScalarMult(pub.X, pub.Y, ephemeralKey.D.Bytes())
+	secret.Write([]byte{0x04}) // end of transmission
 
-	// Sometimes shared secret coordinates are less than 32 bytes; Big Endian
-	l := len(pub.Curve.Params().P.Bytes())
-	secret.Write(zeroPad(sx.Bytes(), l))
-	secret.Write(zeroPad(sy.Bytes(), l))
+	// Иногда shared secret coordinates меньше 32 байтов, дозаполняем
+	l := len(pub.Curve.Params().P.Bytes()) // порядок поля
+	secret.Write(zeroPadding(sx.Bytes(), l))
+	secret.Write(zeroPadding(sy.Bytes(), l))
 
 	return kdf(secret.Bytes())
 }

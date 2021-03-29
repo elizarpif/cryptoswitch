@@ -2,6 +2,12 @@
 
 Пакет cryptoswitch реализует схему ECIES с выбором алгоритма шифрования (на вход подаются симметричные алгоритмы шифрования, такие как AES, TwoFish и т.д., и режим шифрования )
 
+### ECIES
+
+![Encryption](https://github.com/elizarpif/diploma-elliptic/blob/develop/assets/ecies_encryption.png)
+
+![Decryption](https://github.com/elizarpif/diploma-elliptic/blob/develop/assets/ecies_decryption.png)
+
 ### Возможные алгоритмы:
 - **AES**
 - DES

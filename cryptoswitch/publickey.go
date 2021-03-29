@@ -45,21 +45,21 @@ func (k *PublicKey) Bytes() []byte {
 
 // Decapsulate decapsulates key by using Key Encapsulation Mechanism and returns symmetric key;
 // can be safely used as encryption key
-func (k *PublicKey) Decapsulate(priv *PrivateKey) ([]byte, []byte, error) {
-	if priv == nil {
+func (alicePubKey *PublicKey) Decapsulate(bobPrivKy *PrivateKey) ([]byte, []byte, error) {
+	if bobPrivKy == nil {
 		return nil, nil, fmt.Errorf("public key is empty")
 	}
 
 	var secret bytes.Buffer
-	secret.Write(k.Bytes())
+	secret.Write(alicePubKey.Bytes())
 
-	sx, sy := priv.Curve.ScalarMult(k.X, k.Y, priv.D.Bytes())
+	sx, sy := bobPrivKy.Curve.ScalarMult(alicePubKey.X, alicePubKey.Y, bobPrivKy.D.Bytes())
 	secret.Write([]byte{0x04})
 
 	// Sometimes shared secret coordinates are less than 32 bytes; Big Endian
-	l := len(priv.Curve.Params().P.Bytes())
-	secret.Write(zeroPad(sx.Bytes(), l))
-	secret.Write(zeroPad(sy.Bytes(), l))
+	l := len(bobPrivKy.Curve.Params().P.Bytes())
+	secret.Write(zeroPadding(sx.Bytes(), l))
+	secret.Write(zeroPadding(sy.Bytes(), l))
 
 	return kdf(secret.Bytes())
 }

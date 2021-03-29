@@ -61,19 +61,19 @@ func GenerateKey() (*PrivateKey, error) {
 }
 
 // Encrypt encrypts a passed message with a receiver public key, returns ciphertext or encryption error
-func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) Encrypt(bobPubKey *PublicKey, msg []byte) ([]byte, error) {
 	var cipherTextBuf bytes.Buffer
 
 	// Generate ephemeral key
-	ephemeralKey, err := GenerateKey()
+	aliceKeyPair, err := GenerateKey()
 	if err != nil {
 		return nil, err
 	}
 
-	cipherTextBuf.Write(ephemeralKey.PublicKey.Bytes())
+	cipherTextBuf.Write(aliceKeyPair.PublicKey.Bytes())
 
 	// Derive shared secret
-	sharedSecret, keyMac, err := ephemeralKey.Encapsulate(pubkey)
+	keyEnc, keyMac, err := aliceKeyPair.Encapsulate(bobPubKey)
 	if err != nil {
 		return nil, err
 	}
@@ -81,27 +81,27 @@ func (cw *CryptoSwitch) Encrypt(pubkey *PublicKey, msg []byte) ([]byte, error) {
 	switch cw.alg {
 	case AES:
 		// AES encryption
-		return cw.encryptAES(sharedSecret, keyMac, cipherTextBuf, msg)
+		return cw.encryptAES(keyEnc, keyMac, cipherTextBuf, msg)
 	case DES:
-		return encryptDES(sharedSecret, cipherTextBuf, msg)
+		return encryptDES(keyEnc, cipherTextBuf, msg)
 	case Twofish:
-		return encryptTwofish(sharedSecret, cipherTextBuf, msg)
+		return encryptTwofish(keyEnc, cipherTextBuf, msg)
 	case Camellia:
-		return encryptCamellia(sharedSecret, cipherTextBuf, msg)
+		return encryptCamellia(keyEnc, cipherTextBuf, msg)
 	default:
 		return nil, errors.New("unknown cipher type")
 	}
 }
 
 // Decrypt decrypts a passed message with a receiver private key, returns plaintext or decryption error
-func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) Decrypt(bobPrivKey *PrivateKey, msg []byte) ([]byte, error) {
 	// Message cannot be less than length of public key (65) + nonce (16) + tag (16)
 	if cw.mode == GCM && len(msg) <= (1+32+32+16+16) {
 		return nil, fmt.Errorf("invalid length of message")
 	}
 
 	// Ephemeral sender public key
-	ethPubkey := &PublicKey{
+	alicePubkey := &PublicKey{
 		Curve: secp256k1.SECP256K1(),
 		X:     new(big.Int).SetBytes(msg[1:33]),
 		Y:     new(big.Int).SetBytes(msg[33:65]),
@@ -111,7 +111,7 @@ func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error)
 	msg = msg[65:]
 
 	// Derive shared secret
-	ss, keyMac, err := ethPubkey.Decapsulate(privkey)
+	keyEnc, keyMac, err := alicePubkey.Decapsulate(bobPrivKey)
 	if err != nil {
 		return nil, err
 	}
@@ -119,13 +119,13 @@ func (cw *CryptoSwitch) Decrypt(privkey *PrivateKey, msg []byte) ([]byte, error)
 	switch cw.alg {
 	case AES:
 		// AES encryption
-		return cw.decryptAES(ss, keyMac, msg)
+		return cw.decryptAES(keyEnc, keyMac, msg)
 	case DES:
-		return decryptDES(ss, msg)
+		return decryptDES(keyEnc, msg)
 	case Twofish:
-		return decryptTwofish(ss, msg)
+		return decryptTwofish(keyEnc, msg)
 	case Camellia:
-		return decryptCamellia(ss, msg)
+		return decryptCamellia(keyEnc, msg)
 	default:
 		return nil, errors.New("unknown cipher type")
 	}

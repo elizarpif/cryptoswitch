@@ -13,7 +13,7 @@ func EncryptGCM(block cipher.Block, cipherTextBuf bytes.Buffer, msg []byte) ([]b
 		return nil, fmt.Errorf("cannot read random bytes for nonce: %w", err)
 	}
 
-	// добавляем к буферу (эфемерный публич ключ + IV)
+	// добавляем к буферу (инкапсулированный публич ключ + nonce)
 	cipherTextBuf.Write(nonce)
 
 	//  режим счетчика Галуа

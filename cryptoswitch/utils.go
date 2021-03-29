@@ -24,8 +24,9 @@ func kdf(secret []byte) (keyEnc, keyMac []byte, err error) {
 	return keyEnc, keyMac, nil
 }
 
-func zeroPad(b []byte, leigth int) []byte {
-	for i := 0; i < leigth-len(b); i++ {
+// zaroPadding добавляет в массив байтов нужное количество нулей
+func zeroPadding(b []byte, length int) []byte {
+	for i := 0; i < length-len(b); i++ {
 		b = append([]byte{0x00}, b...)
 	}
 

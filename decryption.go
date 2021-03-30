@@ -10,14 +10,13 @@ import (
 	"math/big"
 
 	"github.com/elizarpif/camellia"
-	"github.com/elizarpif/diploma-elliptic/modes"
+	"github.com/elizarpif/cryptoswitch/modes"
 	"github.com/fomichev/secp256k1"
 
 	"golang.org/x/crypto/twofish"
 )
 
-// Decapsulate decapsulates key by using Key Encapsulation Mechanism and returns symmetric key;
-// can be safely used as encryption key
+// Decapsulate decapsulates key by using Key Encapsulation Mechanism and returns k_enc, k_mac
 func (cw *CryptoSwitch) Decapsulate(alicePubKey *PublicKey, bobPrivKy *PrivateKey) ([]byte, []byte, error) {
 	if bobPrivKy == nil {
 		return nil, nil, fmt.Errorf("public key is empty")

@@ -129,30 +129,30 @@ func TestCryptoSwitch_Encrypt_Mode(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		//{
-		//	name: "AES CBC",
-		//	fields: fields{
-		//		alg:  AES,
-		//		mode: CBC,
-		//	},
-		//	args: args{
-		//		pubkey: privKey.PublicKey,
-		//		msg:    []byte(testingMessage),
-		//	},
-		//	wantErr: false,
-		//},
-		//{
-		//	name: "DES GCM",
-		//	fields: fields{
-		//		alg:  DES,
-		//		mode: GCM,
-		//	},
-		//	args: args{
-		//		pubkey: privKey.PublicKey,
-		//		msg:    []byte(testingMessage),
-		//	},
-		//	wantErr: false,
-		//},
+		{
+			name: "AES CBC",
+			fields: fields{
+				alg:  AES,
+				mode: CBC,
+			},
+			args: args{
+				pubkey: privKey.PublicKey,
+				msg:    []byte(testingMessage),
+			},
+			wantErr: false,
+		},
+		{
+			name: "DES GCM - не работает для этого режима(ибо нужен 128битный ключ)",
+			fields: fields{
+				alg:  DES,
+				mode: GCM,
+			},
+			args: args{
+				pubkey: privKey.PublicKey,
+				msg:    []byte(testingMessage),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -165,10 +165,11 @@ func TestCryptoSwitch_Encrypt_Mode(t *testing.T) {
 				t.Errorf("Encrypt() error = %v", err)
 				return
 			}
-
-			decrypt, err := cw.Decrypt(privKey, got)
-			if err != nil || (string(decrypt) != testingMessage) {
-				t.Errorf("Decrypt() got = %v, want %v", string(decrypt), testingMessage)
+			if !tt.wantErr {
+				decrypt, err := cw.Decrypt(privKey, got)
+				if err != nil || (string(decrypt) != testingMessage) {
+					t.Errorf("Decrypt() got = %v, want %v", string(decrypt), testingMessage)
+				}
 			}
 		})
 	}

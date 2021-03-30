@@ -9,9 +9,9 @@ import (
 )
 
 // Key Derivation Function (KDF) — функция для генерации общих ключей из некоторого набора данных и параметров.
-func kdf(secret []byte) (keyEnc, keyMac []byte, err error) {
-	keyEnc = make([]byte, 32)
-	keyMac = make([]byte, 32)
+func kdf(secret []byte, size int) (keyEnc, keyMac []byte, err error) {
+	keyEnc = make([]byte, size)
+	keyMac = make([]byte, size)
 
 	kdf := hkdf.New(sha256.New, secret, nil, nil)
 	if _, err := io.ReadFull(kdf, keyEnc); err != nil {

@@ -1,4 +1,4 @@
-package modes
+package cryptoswitch
 
 import (
 	"crypto/hmac"
@@ -6,7 +6,7 @@ import (
 	"hash"
 )
 
-func getTag(keyMac, ciphertext []byte) hash.Hash{
+func getTag(keyMac, ciphertext []byte) hash.Hash {
 	tag := hmac.New(
 		sha256.New,
 		keyMac,

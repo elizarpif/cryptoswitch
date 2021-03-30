@@ -2,7 +2,7 @@ package cryptoswitch
 
 import (
 	"bytes"
-	"fmt"
+	"crypto/elliptic"
 	"math/big"
 )
 
@@ -11,22 +11,38 @@ type PrivateKey struct {
 	D *big.Int
 }
 
-// Encapsulate инакпсулирует ключ используя KEM (Key Encapsulation Mechanism)
-func (ephemeralKey *PrivateKey) Encapsulate(pub *PublicKey) ([]byte, []byte, error) {
-	if pub == nil {
-		return nil, nil, fmt.Errorf("public key is empty")
+// PublicKey instance with nested elliptic.Curve interface (secp256k1 instance in our case)
+type PublicKey struct {
+	elliptic.Curve
+	X, Y *big.Int
+}
+
+// Bytes returns public key raw bytes;
+// Could be optionally compressed by dropping Y part
+func (k *PublicKey) Bytes() []byte {
+	x := k.X.Bytes()
+	if len(x) < 32 {
+		for i := 0; i < 32-len(x); i++ {
+			x = append([]byte{0}, x...)
+		}
 	}
 
-	var secret bytes.Buffer
-	secret.Write(ephemeralKey.PublicKey.Bytes()) // эфемерный публичный ключ
+	//if compressed {
+	//	// If odd
+	//	if k.Y.Bit(0) != 0 {
+	//		return bytes.Join([][]byte{{0x03}, x}, nil)
+	//	}
+	//
+	//	// If even
+	//	return bytes.Join([][]byte{{0x02}, x}, nil)
+	//}
 
-	sx, sy := pub.Curve.ScalarMult(pub.X, pub.Y, ephemeralKey.D.Bytes())
-	secret.Write([]byte{0x04}) // end of transmission
+	y := k.Y.Bytes()
+	if len(y) < 32 {
+		for i := 0; i < 32-len(y); i++ {
+			y = append([]byte{0}, y...)
+		}
+	}
 
-	// Иногда shared secret coordinates меньше 32 байтов, дозаполняем
-	l := len(pub.Curve.Params().P.Bytes()) // порядок поля
-	secret.Write(zeroPadding(sx.Bytes(), l))
-	secret.Write(zeroPadding(sy.Bytes(), l))
-
-	return kdf(secret.Bytes())
+	return bytes.Join([][]byte{{0x04}, x, y}, nil)
 }

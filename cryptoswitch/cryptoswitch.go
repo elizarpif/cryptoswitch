@@ -1,10 +1,8 @@
 package cryptoswitch
 
 import (
-	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"math/big"
 
@@ -60,73 +58,13 @@ func GenerateKey() (*PrivateKey, error) {
 	}, nil
 }
 
-// Encrypt encrypts a passed message with a receiver public key, returns ciphertext or encryption error
-func (cw *CryptoSwitch) Encrypt(bobPubKey *PublicKey, msg []byte) ([]byte, error) {
-	var cipherTextBuf bytes.Buffer
-
-	// Generate ephemeral key
-	aliceKeyPair, err := GenerateKey()
-	if err != nil {
-		return nil, err
-	}
-
-	cipherTextBuf.Write(aliceKeyPair.PublicKey.Bytes())
-
-	// Derive shared secret
-	keyEnc, keyMac, err := aliceKeyPair.Encapsulate(bobPubKey)
-	if err != nil {
-		return nil, err
-	}
-
+func (cw *CryptoSwitch) keySize() (size int) {
 	switch cw.alg {
-	case AES:
-		// AES encryption
-		return cw.encryptAES(keyEnc, keyMac, cipherTextBuf, msg)
+	case AES, Camellia, Twofish:
+		size = 16
 	case DES:
-		return encryptDES(keyEnc, cipherTextBuf, msg)
-	case Twofish:
-		return encryptTwofish(keyEnc, keyMac, cipherTextBuf, msg)
-	case Camellia:
-		return encryptCamellia(keyEnc, keyMac, cipherTextBuf, msg)
-	default:
-		return nil, errors.New("unknown cipher type")
-	}
-}
-
-// Decrypt decrypts a passed message with a receiver private key, returns plaintext or decryption error
-func (cw *CryptoSwitch) Decrypt(bobPrivKey *PrivateKey, msg []byte) ([]byte, error) {
-	// Message cannot be less than length of public key (65) + nonce (16) + tag (16)
-	if cw.mode == GCM && len(msg) <= (1+32+32+16+16) {
-		return nil, fmt.Errorf("invalid length of message")
+		size = 8
 	}
 
-	// Ephemeral sender public key
-	alicePubkey := &PublicKey{
-		Curve: secp256k1.SECP256K1(),
-		X:     new(big.Int).SetBytes(msg[1:33]),
-		Y:     new(big.Int).SetBytes(msg[33:65]),
-	}
-
-	// Shift message
-	msg = msg[65:]
-
-	// Derive shared secret
-	keyEnc, keyMac, err := alicePubkey.Decapsulate(bobPrivKey)
-	if err != nil {
-		return nil, err
-	}
-
-	switch cw.alg {
-	case AES:
-		// AES encryption
-		return cw.decryptAES(keyEnc, keyMac, msg)
-	case DES:
-		return decryptDES(keyEnc, msg)
-	case Twofish:
-		return decryptTwofish(keyEnc, keyMac, msg)
-	case Camellia:
-		return decryptCamellia(keyEnc, keyMac, msg)
-	default:
-		return nil, errors.New("unknown cipher type")
-	}
+	return
 }

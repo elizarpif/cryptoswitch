@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/cipher"
 	"crypto/rand"
-	"errors"
 	"io"
 )
 
@@ -72,26 +71,9 @@ func decryptCBC(block cipher.Block, ciphertext []byte) ([]byte, error) {
 }
 
 func EncryptCBC(block cipher.Block, keyMac []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
-	ciphertext, err := encryptCBC(block, msg)
-	if err != nil {
-		return nil, err
-	}
-
-	tag := tag(keyMac, ciphertext)
-
-	cipherTextBuf.Write(ciphertext)
-	cipherTextBuf.Write(tag)
-
-	return cipherTextBuf.Bytes(), nil
+	return encryptCBC(block, msg)
 }
 
 func DecryptCBC(block cipher.Block, keyMac, msg []byte) ([]byte, error) {
-	tagFromMsg := msg[len(msg)-32:]
-	ciphertext := msg[:len(msg)-32]
-
-	if !validTag(tagFromMsg, keyMac, ciphertext) {
-		return nil, errors.New("invalid tag")
-	}
-
-	return decryptCBC(block, ciphertext)
+	return decryptCBC(block, msg)
 }

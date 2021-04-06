@@ -133,7 +133,12 @@ type Stream interface {
 }
 
 // return src, dst
-func Padding(src []byte, blocksize int) ([]byte, []byte) {
+func Padding(srcPtr *[]byte, blocksize int) ([]byte, []byte) {
+	if srcPtr == nil {
+		return nil, nil
+	}
+	src := *srcPtr
+
 	compl := blocksize - len(src)%blocksize
 
 	if compl == 0 {

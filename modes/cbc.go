@@ -1,13 +1,13 @@
 package modes
 
 import (
-	"bytes"
 	"crypto/cipher"
 	"crypto/rand"
+	"errors"
 	"io"
 )
 
-func blockModeEncrypt(c BlockMode, data []byte) ([]byte, error) {
+func blockModeEncrypt(c BlockMode, data *[]byte) (*[]byte, error) {
 	// дополняем последний блок
 	src, dst := Padding(data, c.BlockSize())
 
@@ -16,12 +16,15 @@ func blockModeEncrypt(c BlockMode, data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return dst, nil
+	return &dst, nil
 }
 
-func blockModeDecrypt(c BlockMode, data []byte) ([]byte, error) {
-	src := data
-	dst := make([]byte, len(data))
+func blockModeDecrypt(c BlockMode, data *[]byte) (*[]byte, error) {
+	if data == nil {
+		return nil, errors.New("data = nil")
+	}
+	src := *data
+	dst := make([]byte, len(src))
 
 	err := c.CryptBlocks(dst, src)
 	if err != nil {
@@ -31,10 +34,10 @@ func blockModeDecrypt(c BlockMode, data []byte) ([]byte, error) {
 	// избавляемся от набивки
 	res := Unpadding(dst)
 
-	return res, nil
+	return &res, nil
 }
 
-func encryptCBC(block cipher.Block, data []byte) ([]byte, error) {
+func encryptCBC(block cipher.Block, data *[]byte) (*[]byte, error) {
 	// The IV needs to be unique, but not secure. Therefore it's common to
 	// include it at the beginning of the ciphertext.
 	iv := make([]byte, block.BlockSize())
@@ -53,12 +56,17 @@ func encryptCBC(block cipher.Block, data []byte) ([]byte, error) {
 	}
 
 	// добавляем вектор инициализации (длина = 16)
-	ret = append(iv, ret...)
+	res := append(iv, (*ret)...)
 
-	return ret, nil
+	return &res, nil
 }
 
-func decryptCBC(block cipher.Block, ciphertext []byte) ([]byte, error) {
+func decryptCBC(block cipher.Block, ciphertextPtr *[]byte) (*[]byte, error) {
+	if ciphertextPtr == nil{
+		return nil, errors.New("ciphertext = nil")
+	}
+	ciphertext := *ciphertextPtr
+
 	iv := ciphertext[:block.BlockSize()]
 	ciphertext = ciphertext[block.BlockSize():]
 
@@ -67,13 +75,13 @@ func decryptCBC(block cipher.Block, ciphertext []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return blockModeDecrypt(decrypter, ciphertext)
+	return blockModeDecrypt(decrypter, &ciphertext)
 }
 
-func EncryptCBC(block cipher.Block, keyMac []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
+func EncryptCBC(block cipher.Block, msg *[]byte) (*[]byte, error) {
 	return encryptCBC(block, msg)
 }
 
-func DecryptCBC(block cipher.Block, keyMac, msg []byte) ([]byte, error) {
+func DecryptCBC(block cipher.Block, msg *[]byte) (*[]byte, error) {
 	return decryptCBC(block, msg)
 }

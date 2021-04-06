@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"crypto/cipher"
 	"crypto/rand"
+	"errors"
 	"fmt"
 )
 
-func EncryptGCM(block cipher.Block, cipherTextBuf *bytes.Buffer, msg []byte) ([]byte, error) {
+func EncryptGCM(block cipher.Block, cipherTextBuf *bytes.Buffer, msg *[]byte) ([]byte, error) {
 	nonceSize := block.BlockSize()
 
 	nonce := make([]byte, nonceSize) //  = длине блока, AES-128
@@ -24,20 +25,28 @@ func EncryptGCM(block cipher.Block, cipherTextBuf *bytes.Buffer, msg []byte) ([]
 		return nil, fmt.Errorf("cannot create aes gcm: %w", err)
 	}
 
-	ciphertext := aesgcm.Seal(nil, nonce, msg, nil)
+	if msg == nil {
+		return nil, errors.New("msg = nil")
+	}
+
+	ciphertext := aesgcm.Seal(nil, nonce, *msg, nil)
 	return ciphertext, nil
 }
 
-func DecryptGCM(block cipher.Block, nonce, ciphertext []byte) ([]byte, error) {
+func DecryptGCM(block cipher.Block, nonce []byte, ciphertext *[]byte) (*[]byte, error) {
 	gcm, err := cipher.NewGCMWithNonceSize(block, len(nonce))
 	if err != nil {
 		return nil, fmt.Errorf("cannot create gcm cipher: %w", err)
 	}
 
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if ciphertext == nil {
+		return nil, errors.New("msg = nil")
+	}
+
+	plaintext, err := gcm.Open(nil, nonce, *ciphertext, nil)
 	if err != nil {
 		return nil, fmt.Errorf("cannot decrypt ciphertext: %w", err)
 	}
 
-	return plaintext, nil
+	return &plaintext, nil
 }

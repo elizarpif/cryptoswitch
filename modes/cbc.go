@@ -3,8 +3,9 @@ package modes
 import (
 	"crypto/cipher"
 	"crypto/rand"
-	"errors"
 	"io"
+
+	crypterrors "github.com/elizarpif/cryptoswitch/errors"
 )
 
 func blockModeEncrypt(c BlockMode, data *[]byte) (*[]byte, error) {
@@ -21,7 +22,7 @@ func blockModeEncrypt(c BlockMode, data *[]byte) (*[]byte, error) {
 
 func blockModeDecrypt(c BlockMode, data *[]byte) (*[]byte, error) {
 	if data == nil {
-		return nil, errors.New("data = nil")
+		return nil, crypterrors.ErrNilMsg
 	}
 	src := *data
 	dst := make([]byte, len(src))
@@ -63,7 +64,7 @@ func encryptCBC(block cipher.Block, data *[]byte) (*[]byte, error) {
 
 func decryptCBC(block cipher.Block, ciphertextPtr *[]byte) (*[]byte, error) {
 	if ciphertextPtr == nil{
-		return nil, errors.New("ciphertext = nil")
+		return nil, crypterrors.ErrNilMsg
 	}
 	ciphertext := *ciphertextPtr
 

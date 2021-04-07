@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"crypto/cipher"
 	"crypto/rand"
-	"errors"
 	"fmt"
+
+	crypterrors "github.com/elizarpif/cryptoswitch/errors"
 )
 
 func EncryptGCM(block cipher.Block, cipherTextBuf *bytes.Buffer, msg *[]byte) ([]byte, error) {
@@ -26,7 +27,7 @@ func EncryptGCM(block cipher.Block, cipherTextBuf *bytes.Buffer, msg *[]byte) ([
 	}
 
 	if msg == nil {
-		return nil, errors.New("msg = nil")
+		return nil, crypterrors.ErrNilMsg
 	}
 
 	ciphertext := aesgcm.Seal(nil, nonce, *msg, nil)
@@ -40,7 +41,7 @@ func DecryptGCM(block cipher.Block, nonce []byte, ciphertext *[]byte) (*[]byte, 
 	}
 
 	if ciphertext == nil {
-		return nil, errors.New("msg = nil")
+		return nil, crypterrors.ErrNilMsg
 	}
 
 	plaintext, err := gcm.Open(nil, nonce, *ciphertext, nil)

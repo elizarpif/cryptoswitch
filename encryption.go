@@ -96,7 +96,7 @@ func (cw *CryptoSwitch) encrypt(block cipher.Block, keyMac []byte, cipherTextBuf
 		}
 
 		cipherTextBuf.Write(ciphertext)
-		cipherTextBuf.Write(tag(keyMac, ciphertext))
+		cipherTextBuf.Write(tag(keyMac, &ciphertext))
 
 		res := cipherTextBuf.Bytes()
 		return &res, nil
@@ -108,7 +108,7 @@ func (cw *CryptoSwitch) encrypt(block cipher.Block, keyMac []byte, cipherTextBuf
 
 		tag := tag(keyMac, ciphertext)
 
-		cipherTextBuf.Write(ciphertext)
+		cipherTextBuf.Write(*ciphertext)
 		cipherTextBuf.Write(tag)
 
 		res := cipherTextBuf.Bytes()

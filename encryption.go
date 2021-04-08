@@ -38,7 +38,7 @@ func (cw *CryptoSwitch) Encapsulate(alicePriveKey *PrivateKey, bobPubKey *Public
 }
 
 // Encrypt encrypts a passed message with a receiver public key, returns ciphertext or encryption error
-func (cw *CryptoSwitch) Encrypt(bobPubKey *PublicKey, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) Encrypt(bobPubKey *PublicKey, msg *[]byte) (*[]byte, error) {
 	var cipherTextBuf bytes.Buffer
 
 	alicePrivKey, err := GenerateKey()
@@ -87,7 +87,7 @@ func (cw *CryptoSwitch) Encrypt(bobPubKey *PublicKey, msg []byte) ([]byte, error
 	return cw.encrypt(block, keyMac, cipherTextBuf, msg)
 }
 
-func (cw *CryptoSwitch) encrypt(block cipher.Block, keyMac []byte, cipherTextBuf bytes.Buffer, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) encrypt(block cipher.Block, keyMac []byte, cipherTextBuf bytes.Buffer, msg *[]byte) (*[]byte, error) {
 	switch cw.mode {
 	case GCM:
 		ciphertext, err := modes.EncryptGCM(block, &cipherTextBuf, msg)
@@ -96,21 +96,23 @@ func (cw *CryptoSwitch) encrypt(block cipher.Block, keyMac []byte, cipherTextBuf
 		}
 
 		cipherTextBuf.Write(ciphertext)
-		cipherTextBuf.Write(tag(keyMac, ciphertext))
+		cipherTextBuf.Write(tag(keyMac, &ciphertext))
 
-		return cipherTextBuf.Bytes(), nil
+		res := cipherTextBuf.Bytes()
+		return &res, nil
 	case CBC:
-		ciphertext, err := modes.EncryptCBC(block, keyMac, cipherTextBuf, msg)
+		ciphertext, err := modes.EncryptCBC(block, msg)
 		if err != nil {
 			return nil, errors.New("can't encrypt cbc")
 		}
 
 		tag := tag(keyMac, ciphertext)
 
-		cipherTextBuf.Write(ciphertext)
+		cipherTextBuf.Write(*ciphertext)
 		cipherTextBuf.Write(tag)
 
-		return cipherTextBuf.Bytes(), nil
+		res := cipherTextBuf.Bytes()
+		return &res, nil
 	}
 
 	return nil, errors.New("unknown mode")

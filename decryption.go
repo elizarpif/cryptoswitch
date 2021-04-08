@@ -10,6 +10,7 @@ import (
 	"math/big"
 
 	"github.com/elizarpif/camellia"
+	crypterrors "github.com/elizarpif/cryptoswitch/errors"
 	"github.com/elizarpif/cryptoswitch/modes"
 	"github.com/fomichev/secp256k1"
 
@@ -39,7 +40,12 @@ func (cw *CryptoSwitch) Decapsulate(alicePubKey *PublicKey, bobPrivKy *PrivateKe
 }
 
 // Decrypt decrypts a passed message with a receiver private key, returns plaintext or decryption error
-func (cw *CryptoSwitch) Decrypt(bobPrivKey *PrivateKey, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) Decrypt(bobPrivKey *PrivateKey, msgPtr *[]byte) (*[]byte, error) {
+	if msgPtr == nil {
+		return nil, crypterrors.ErrNilMsg
+	}
+	msg := *msgPtr
+
 	// Message cannot be less than length of public key (65) + nonce (16) + tag (16)
 	if cw.mode == GCM && len(msg) <= (1+32+32+16+16) {
 		return nil, fmt.Errorf("invalid length of message")
@@ -92,10 +98,15 @@ func (cw *CryptoSwitch) Decrypt(bobPrivKey *PrivateKey, msg []byte) ([]byte, err
 		return nil, errors.New("unknown cipher type")
 	}
 
-	return cw.decrypt(block, keyMac, msg)
+	return cw.decrypt(block, keyMac, &msg)
 }
 
-func (cw *CryptoSwitch) decrypt(block cipher.Block, keyMac []byte, msg []byte) ([]byte, error) {
+func (cw *CryptoSwitch) decrypt(block cipher.Block, keyMac []byte, msgPtr *[]byte) (*[]byte, error) {
+	if msgPtr == nil {
+		return nil, errors.New("msg = nil")
+	}
+	msg := *msgPtr
+
 	switch cw.mode {
 	case GCM:
 		nonceSize := block.BlockSize()
@@ -105,20 +116,20 @@ func (cw *CryptoSwitch) decrypt(block cipher.Block, keyMac []byte, msg []byte) (
 
 		ciphertext := msg[nonceSize : len(msg)-32]
 
-		if !validTag(tag, keyMac, ciphertext) {
-			return nil, errors.New("invalid tag")
+		if !validTag(tag, keyMac, &ciphertext) {
+			return nil, crypterrors.ErrInvalidTag
 		}
 
-		return modes.DecryptGCM(block, nonce, ciphertext)
+		return modes.DecryptGCM(block, nonce, &ciphertext)
 	case CBC:
 		tagFromMsg := msg[len(msg)-32:]
 		ciphertext := msg[:len(msg)-32]
 
-		if !validTag(tagFromMsg, keyMac, ciphertext) {
-			return nil, errors.New("invalid tag")
+		if !validTag(tagFromMsg, keyMac, &ciphertext) {
+			return nil, crypterrors.ErrInvalidTag
 		}
 
-		return modes.DecryptCBC(block, keyMac, ciphertext)
+		return modes.DecryptCBC(block, &ciphertext)
 	}
 
 	return nil, errors.New("unknown mode")

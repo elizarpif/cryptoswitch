@@ -31,13 +31,13 @@ if err != nil {
 ### Ciphers
 
 #### Camellia
-Camellia is a symmetric block encryption algorithm (block size 128 bits, key 128, 192, 256 bits), one of the finalists of the European NESSIE competition. It is a further development of one of the algorithms that participated in the AES competition.[17]
+Camellia is a symmetric block encryption algorithm (block size 128 bits, key 128, 192, 256 bits), one of the finalists of the European NESSIE competition. It is a further development of one of the algorithms that participated in the AES competition.
 The structure of the algorithm is based on the classical Feistel chain with preliminary and final whitening. The cyclic function uses a nonlinear S-block transformation, a linear scattering block every 16 cycles, a byte-by-byte XOR operation, and a byte permutation.
 
 Depending on the length of the key, it has 18 cycles of a 128-bit key, or 24 cycles of a 192 and 256-bit key. In the software implementation, Camellia was chosen with a block size of 128 bits and a key length equal to 128 bits.
 
 #### Twofish
-Twofish is a symmetric block encryption algorithm with a block size of 128 bits and a key length of up to 256 bits. The number of rounds is 16. Developed by a team of specialists led by Bruce Schneier. He was one of the five finalists of the second stage of the AES competition. The algorithm is based on Blowfish, Safer and Square algorithms. [28]
+Twofish is a symmetric block encryption algorithm with a block size of 128 bits and a key length of up to 256 bits. The number of rounds is 16. Developed by a team of specialists led by Bruce Schneier. He was one of the five finalists of the second stage of the AES competition. The algorithm is based on Blowfish, Safer and Square algorithms.
 
 The distinctive features of the algorithm are the use of precomputed and key-dependent s-boxes and a complex scheme for scanning the encryption keys. Half of the n-bit encryption key is used as the encryption key, the other half (on which the s-boxes depend) is used to modify the algorithm.
 
@@ -60,7 +60,7 @@ In comparison with Rijndael, it loses in the relative complexity of the algorith
 The Twofish algorithm is implemented as a mixed Feistel network with four branches that modify each other using Hadamard cryptographic transformation.
 
 The Twofish algorithm is not patented and can be used by anyone without any fees or deductions. It is used in many encryption programs, although it is less widespread than Blowfish.
-### Possible encryption modes::
+### Possible encryption modes:
 - CBC
 - GCM (works only with 128-bit key encryption)
 

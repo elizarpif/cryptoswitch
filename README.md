@@ -1,6 +1,5 @@
-## Библиотека обеспечения безопасности данных на основе эллиптических кривых
-
-Пакет cryptoswitch реализует схему ECIES с выбором алгоритма шифрования (на вход подаются симметричные алгоритмы шифрования, такие как AES, TwoFish и т.д., и режим шифрования )
+## Library for ensurance data safety based on elliptic curves
+Package cryptoswitch realizes scheme ECIES with choice of encryption algorythm (symmetric encryption algorithms such as AES, TwoFish, etc., and encryption mode are supplied to the input)
 
 ### ECIES
 
@@ -8,16 +7,11 @@
 
 ![Decryption](https://github.com/elizarpif/diploma-elliptic/blob/develop/assets/ecies_decryption.png)
 
-### Возможные алгоритмы (курсивом - не реализовано):
+### Available algorythms:
 - **AES**
 - **DES**
-- _3DES (TripleDES)_
-- _RC5_
-- _Blowfish_
 - **Twofish**
 - **Camellia**
-- _RC4_
-- _SEAl_
 
 ```go
 privKey, err := cryptoswitch.GenerateKey()
@@ -34,41 +28,40 @@ if err != nil {
     return err
 }
 ```
-### Шифры
+### Ciphers
 
 #### Camellia
-Сamellia - алгоритм симметричного блочного шифрования (размер блока 128 бит, ключ 128, 192, 256 бит), один из финалистов европейского конкурса NESSIE. Является дальнейшим развитием одного из алгоритмов, участвовавших в конкурсе AES. [17]
-Структура алгоритма основана на классической цепи Фейстеля с предварительным и финальным забеливанием. Цикловая функция использует нелинейное преобразование S-блока, блок линейного рассеивания каждые 16 циклов, побайтовую операцию XOR и байтовую перестановку.
+Camellia is a symmetric block encryption algorithm (block size 128 bits, key 128, 192, 256 bits), one of the finalists of the European NESSIE competition. It is a further development of one of the algorithms that participated in the AES competition.[17]
+The structure of the algorithm is based on the classical Feistel chain with preliminary and final whitening. The cyclic function uses a nonlinear S-block transformation, a linear scattering block every 16 cycles, a byte-by-byte XOR operation, and a byte permutation.
 
-В зависимости от длины ключа имеет 18 циклов 128 разрядный ключ, либо 24 цикла 192 и 256 разрядный ключ. В программной реализации был выбран Camellia с размером блока в 128 бит и длиной ключа, равной 128 бит. 
+Depending on the length of the key, it has 18 cycles of a 128-bit key, or 24 cycles of a 192 and 256-bit key. In the software implementation, Camellia was chosen with a block size of 128 bits and a key length equal to 128 bits.
 
 #### Twofish
-Twofish — симметричный алгоритм блочного шифрования с размером блока 128 бит и длиной ключа до 256 бит. Число раундов 16. Разработан группой специалистов во главе с Брюсом Шнайером. Являлся одним из пяти финалистов второго этапа конкурса AES. Алгоритм разработан на основе алгоритмов Blowfish, Safer и Square. [28]
+Twofish is a symmetric block encryption algorithm with a block size of 128 bits and a key length of up to 256 bits. The number of rounds is 16. Developed by a team of specialists led by Bruce Schneier. He was one of the five finalists of the second stage of the AES competition. The algorithm is based on Blowfish, Safer and Square algorithms. [28]
 
-Отличительными особенностями алгоритма являются использование предварительно вычисляемых и зависящих от ключа s-box-ов и сложная схема развёртки подключей шифрования. Половина n-битного ключа шифрования используется как ключ шифрования, другая — (от которой зависят s-box-ы) — для модификации алгоритма.
+The distinctive features of the algorithm are the use of precomputed and key-dependent s-boxes and a complex scheme for scanning the encryption keys. Half of the n-bit encryption key is used as the encryption key, the other half (on which the s-boxes depend) is used to modify the algorithm.
 
-Twofish разрабатывался специально с учетом требований и рекомендаций для AES:
+Twofish was developed specifically taking into account the requirements and recommendations for AES:
 
-●     128-битный блочный симметричный шифр
+● 128-bit block symmetric cipher
 
-●     Длина ключей 128, 192 и 256 бит
+● Key lengths of 128, 192 and 256 bits
 
-●     Отсутствие слабых ключей
+● No weak keys
 
-●     Эффективная программная и аппаратная реализация
+● Efficient software and hardware implementation
 
-●     Гибкость (возможность использования дополнительных длин ключа, использование в поточном шифровании, хэш-функциях и т. д.)
+● Flexibility (the ability to use additional key lengths, use in stream encryption, hash functions, etc.)
 
-●     Простота алгоритма 
+● Simplicity of the algorithm
 
-В сравнении с Rijndael проигрывает в относительной сложности алгоритма и скорости выполнения на большинстве платформ.
+In comparison with Rijndael, it loses in the relative complexity of the algorithm and the speed of execution on most platforms.
 
-Алгоритм Twofish реализован в виде смешанной сети Фейстеля с четырьмя ветвями, которые модифицируют друг друга с использованием криптопреобразования Адамара.
+The Twofish algorithm is implemented as a mixed Feistel network with four branches that modify each other using Hadamard cryptographic transformation.
 
-Алгоритм Twofish не запатентован и может быть использован кем угодно без какой-либо платы или отчислений. Он используется во многих программах шифрования, хотя и получил меньшее распространение, чем Blowfish.
-
-### Возможные режимы шифрования:
+The Twofish algorithm is not patented and can be used by anyone without any fees or deductions. It is used in many encryption programs, although it is less widespread than Blowfish.
+### Possible encryption modes::
 - CBC
-- GCM (работает только с шифрованием ключа 128 бит)
+- GCM (works only with 128-bit key encryption)
 
-GCM – **Galois/Counter Mode** – режим счётчика с аутентификацией Галуа: это режим аутентифицированного шифрования, который, к тому же, поддерживает аутентификацию дополнительных данных (передаются в открытом виде). В англоязычной литературе это называется AEAD – Authenticated Encryption with Associated Data. В ГОСТовой криптографии такого режима как раз не хватает. Аутентифицированное шифрование позволяет обнаружить изменения сообщения до его расшифрования, для этого сообщение снабжается специальным кодом аутентификации (в русскоязычной традиции также называется имитовставкой). GCM позволяет защитить кодом аутентификации не только шифрованную часть сообщения, но и произвольные прикреплённые данные – это полезно, потому что в этих данных может быть записан, например, адрес получателя или другая открытая информация, которую, вместе с тем, требуется защитить от искажений/подмены.
+GCM – **Galois/Counter Mode** - counter mode with Galois authentication: this is an authenticated encryption mode, which, in addition, supports the authentication of additional data (transmitted in plain text). In the English literature, this is called AEAD - Authenticated Encryption with Associated Data. In GOST cryptography, this mode is just not enough. Authenticated encryption allows you to detect changes in a message before it is decrypted, for this purpose the message is provided with a special authentication code (in the Russian-speaking tradition, it is also called an imitavka). GCM allows you to protect with an authentication code not only the encrypted part of the message, but also arbitrary attached data – this is useful because, for example, the recipient's address or other open information can be recorded in this data, which, at the same time, needs to be protected from distortion/substitution.

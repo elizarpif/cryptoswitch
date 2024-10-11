@@ -1,4 +1,4 @@
-## Library for ensurance data safety based on elliptic curves
+## Library for the ensurance data safety based on elliptic curves
 Package cryptoswitch realizes scheme ECIES with choice of encryption algorythm (symmetric encryption algorithms such as AES, TwoFish, etc., and encryption mode are supplied to the input)
 
 ### ECIES
